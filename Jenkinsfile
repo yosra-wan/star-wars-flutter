@@ -55,9 +55,5 @@ pipeline {
         }
     }
 
-    post {
-        always {
-            // Clean up any resources, artifacts, or temporary files if needed
-        }
-    }
+ 
 }
