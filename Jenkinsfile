@@ -8,7 +8,7 @@ pipeline {
             steps {
                 script {
                     // Run flutter build web
-                    bat 'flutter build web'
+                    sh 'flutter build web'
                 }
             }
             post {
@@ -28,7 +28,7 @@ pipeline {
             powershell 'Expand-Archive -Path gradle-wrapper.zip -DestinationPath android/gradle/wrapper/ -Force'
 
             // Build the APK
-            bat 'flutter build apk'
+            sh 'flutter build apk'
         }
     }
     post {
