@@ -1,59 +1,58 @@
 pipeline {
     agent any
 
-    environment {
-        FLUTTER_CHANNEL = 'stable'
-        FLUTTER_VERSION = '2.0.1'  // Update with your desired Flutter version
-    }
-
     stages {
-        stage('Checkout') {
+      
+
+        stage('BUILD WEB') {
             steps {
                 script {
-                    // Check out the code from your Git repository
-                    git 'https://github.com/yosra-wan/star-wars-flutter.git'
+                    // Run flutter build web
+                    bat 'flutter build web'
+                }
+            }
+            post {
+                success {
+                    // Archive the web build artifacts
+                    archiveArtifacts artifacts: 'build/web/**', allowEmptyArchive: true
                 }
             }
         }
 
-        stage('Install Dependencies') {
-            steps {
-                script {
-                    // Install Flutter and Dart dependencies
-                    sh "git clone -b ${FLUTTER_CHANNEL} https://github.com/flutter/flutter.git"
-                    sh "./flutter/bin/flutter --version"
-                    sh "./flutter/bin/flutter pub get"
-                }
-            }
-        }
+     stage('BUILD APK') {
+    steps {
+        script {
+           
 
-        stage('Run Tests') {
-            steps {
-                script {
-                    // Run your Flutter tests
-                    sh "./flutter/bin/flutter test"
-                }
-            }
-        }
+            // Unzip the Gradle wrapper (if needed)
+            powershell 'Expand-Archive -Path gradle-wrapper.zip -DestinationPath android/gradle/wrapper/ -Force'
 
-        stage('Build APK') {
-            steps {
-                script {
-                    // Build your Flutter APK
-                    sh "./flutter/bin/flutter build apk"
-                }
-            }
+            // Build the APK
+            bat 'flutter build apk'
         }
+    }
+    post {
+        success {
+            // Archive the APK build artifacts
+            archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', allowEmptyArchive: true
+        }
+    }
+}
 
-        stage('Publish APK') {
+
+
+
+        stage('DISTRIBUTE') {
             steps {
                 script {
-                    // Publish the APK to your desired location (e.g., Google Play, Firebase App Distribution)
-                    // You may use additional plugins or scripts for this step
+                    // Distribute the APK file using App Center
+                    appCenter apiToken: 'e006642d7a561fc195994cfd88529b418c07a6fa',
+                              ownerName: 'Yosr Ayadi',
+                              appName: 'Poppin Road Cinema',
+                              pathToApp: 'build/app/outputs/flutter-apk/app-release.apk',
+                              distributionGroups: 'Cinema'
                 }
             }
         }
     }
-
- 
 }
