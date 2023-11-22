@@ -146,7 +146,7 @@ class _ListWidgetState extends State<ListWidget> {
                                                   ),
                                                 ),
                                                 SizedBox(
-                                                  width: 5,
+                                                  width: 6,
                                                 ),
                                                 Consumer<FavoriteProvider>(
                                                   builder: (context,
