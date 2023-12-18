@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        PATH = "$PATH:/tmp/workspace/flutter/bin"
+        PATH = "$PATH:${WORKSPACE}/flutter/bin"
     }    
     stages {
         stage('GIT PULL') {
@@ -55,6 +55,7 @@ pipeline {
             }
         }
 
+        // Uncomment the following stage if you want to distribute the APK using App Center
         // stage('DISTRIBUTE') {
         //     steps {
         //         script {
