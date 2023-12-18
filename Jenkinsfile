@@ -8,31 +8,33 @@ pipeline {
     stages {
         stage('GIT PULL') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: 'yosra']], userRemoteConfigs: [[url: 'https://github.com/yosra-wan/star-wars-flutter.git']]])
+                catchError {
+                    checkout([$class: 'GitSCM', branches: [[name: 'yosra']], userRemoteConfigs: [[url: 'https://github.com/yosra-wan/star-wars-flutter.git']]])
+                }
             }
         }
 
         stage('SETUP FLUTTER') {
             steps {
-                script {
+                catchError {
                     // Download Flutter SDK
-                    sh "git clone https://github.com/flutter/flutter.git ${FLUTTER_HOME}"
-                    
-                    // Determine the path to the Flutter binary
-                    def flutterPath = "${FLUTTER_HOME}/bin/flutter"
+                    sh "git clone https://github.com/flutter/flutter.git -b stable ${FLUTTER_HOME}"
                     
                     // Ensure the Flutter binary is executable
-                    sh "chmod +x ${flutterPath}"
+                    sh "chmod +x ${FLUTTER_HOME}/bin/flutter"
+                    
+                    // Upgrade Flutter to the latest stable version
+                    sh "${FLUTTER_HOME}/bin/flutter upgrade"
                     
                     // Print the path for verification
-                    echo "Flutter binary path: ${flutterPath}"
+                    echo "Flutter binary path: ${FLUTTER_HOME}/bin/flutter"
                 }
             }
         }
 
         stage('FLUTTER VERSION') {
             steps {
-                script {
+                catchError {
                     // Verify Flutter version
                     sh "${FLUTTER_HOME}/bin/flutter --version"
                 }
@@ -41,7 +43,10 @@ pipeline {
 
         stage('FLUTTER PACKAGES') {
             steps {
-                script {
+                catchError {
+                    // Clean before fetching packages
+                    sh "${FLUTTER_HOME}/bin/flutter clean"
+                    
                     // Get Flutter packages
                     sh "${FLUTTER_HOME}/bin/flutter pub get"
                 }
@@ -50,7 +55,7 @@ pipeline {
 
         stage('BUILD WEB') {
             steps {
-                script {
+                catchError {
                     sh "${FLUTTER_HOME}/bin/flutter build web"
                 }
             }
@@ -63,7 +68,7 @@ pipeline {
 
         stage('BUILD APK') {
             steps {
-                script {
+                catchError {
                     sh "${FLUTTER_HOME}/bin/flutter build apk"
                 }
             }
@@ -73,20 +78,5 @@ pipeline {
                 }
             }
         }
-
-        // Uncomment the following stage if you want to distribute the APK using App Center
-        // stage('DISTRIBUTE') {
-        //     steps {
-        //         script {
-        //             sh '''
-        //             appCenter distribute \
-        //                 --app "Yosr Ayadi/Poppin Road Cinema" \
-        //                 --file build/app/outputs/flutter-apk/app-release.apk \
-        //                 --groups "Cinema" \
-        //                 --token "e006642d7a561fc195994cfd88529b418c07a6fa"
-        //             '''
-        //         }
-        //     }
-        // }
     }
 }
