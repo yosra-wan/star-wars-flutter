@@ -2,7 +2,8 @@ pipeline {
     agent any
     environment {
         FLUTTER_HOME = "${WORKSPACE}/flutter"
-        PATH = "$PATH:${FLUTTER_HOME}/bin"
+        ANDROID_HOME = "/home/ubuntu/android-sdk" // Set this to the correct path
+        PATH = "$PATH:${FLUTTER_HOME}/bin:${ANDROID_HOME}/tools:${ANDROID_HOME}/platform-tools"
     }
 
     stages {
@@ -20,21 +21,15 @@ pipeline {
                     // Download Flutter SDK
                     sh "git clone https://github.com/flutter/flutter.git -b stable ${FLUTTER_HOME}"
                     
+                    // Set ANDROID_HOME for the current session
+                    sh "export ANDROID_HOME=${ANDROID_HOME}"
+                    
                     // Ensure the Flutter binary is executable
                     sh "chmod +x ${FLUTTER_HOME}/bin/flutter"
                     
                     // Upgrade Flutter to the latest stable version
                     sh "${FLUTTER_HOME}/bin/flutter upgrade"
                     
-                    // Print the path for verification
-                    echo "Flutter binary path: ${FLUTTER_HOME}/bin/flutter"
-                }
-            }
-        }
-
-        stage('FLUTTER VERSION') {
-            steps {
-                catchError {
                     // Verify Flutter version
                     sh "${FLUTTER_HOME}/bin/flutter --version"
                 }
@@ -53,15 +48,11 @@ pipeline {
             }
         }
 
-        stage('BUILD WEB') {
+        stage('VERIFY ANDROID SDK') {
             steps {
                 catchError {
-                    sh "${FLUTTER_HOME}/bin/flutter build web"
-                }
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: 'build/web/**', allowEmptyArchive: true
+                    // Verify the Android SDK components
+                    sh "${ANDROID_HOME}/tools/bin/sdkmanager --list"
                 }
             }
         }
@@ -69,6 +60,7 @@ pipeline {
         stage('BUILD APK') {
             steps {
                 catchError {
+                    // Build the APK
                     sh "${FLUTTER_HOME}/bin/flutter build apk"
                 }
             }
@@ -78,5 +70,7 @@ pipeline {
                 }
             }
         }
+
+        // ... (other stages)
     }
 }
