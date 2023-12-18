@@ -1,7 +1,14 @@
 pipeline {
     agent any
-
+ environment {
+      PATH = "$PATH:/tmp/workspace/flutter/bin"
+    }    
     stages {
+        stage('Setup') {
+            steps {
+                print "${env.PATH}"
+            }    
+        }
         stage('GIT PULL') {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: 'yosra']], userRemoteConfigs: [[url: 'https://github.com/yosra-wan/star-wars-flutter.git']]])
