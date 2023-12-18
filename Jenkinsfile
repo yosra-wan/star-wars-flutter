@@ -26,6 +26,27 @@ pipeline {
             }
         }
 
+               stage('FLUTTER PACKAGES') {
+            steps {
+                catchError {
+                    // Clean before fetching packages
+                    sh "${FLUTTER_HOME}/bin/flutter clean"
+                    
+                    // Get Flutter packages
+                    sh "${FLUTTER_HOME}/bin/flutter pub get"
+                }
+            }
+        }
+
+        stage('VERIFY ANDROID SDK') {
+            steps {
+                catchError {
+                    // Verify the Android SDK components
+                    sh "${ANDROID_HOME}/tools/bin/sdkmanager --list"
+                }
+            }
+        }
+
         stage('BUILD WEB') {
             steps {
                 script {
