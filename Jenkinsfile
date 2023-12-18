@@ -1,8 +1,10 @@
 pipeline {
     agent any
     environment {
-        PATH = "$PATH:${WORKSPACE}/flutter/bin"
-    }    
+        FLUTTER_HOME = "${WORKSPACE}/flutter"
+        PATH = "$PATH:${FLUTTER_HOME}/bin"
+    }
+
     stages {
         stage('GIT PULL') {
             steps {
@@ -13,8 +15,11 @@ pipeline {
         stage('SETUP FLUTTER') {
             steps {
                 script {
+                    // Download Flutter SDK
+                    sh "git clone https://github.com/flutter/flutter.git ${FLUTTER_HOME}"
+                    
                     // Determine the path to the Flutter binary
-                    def flutterPath = "${WORKSPACE}/flutter/bin/flutter"
+                    def flutterPath = "${FLUTTER_HOME}/bin/flutter"
                     
                     // Ensure the Flutter binary is executable
                     sh "chmod +x ${flutterPath}"
@@ -25,16 +30,32 @@ pipeline {
             }
         }
 
+        stage('FLUTTER VERSION') {
+            steps {
+                script {
+                    // Verify Flutter version
+                    sh "${FLUTTER_HOME}/bin/flutter --version"
+                }
+            }
+        }
+
+        stage('FLUTTER PACKAGES') {
+            steps {
+                script {
+                    // Get Flutter packages
+                    sh "${FLUTTER_HOME}/bin/flutter pub get"
+                }
+            }
+        }
+
         stage('BUILD WEB') {
             steps {
                 script {
-                    // Run flutter build web
-                    sh "${WORKSPACE}/flutter/bin/flutter build web"
+                    sh "${FLUTTER_HOME}/bin/flutter build web"
                 }
             }
             post {
                 success {
-                    // Archive the web build artifacts
                     archiveArtifacts artifacts: 'build/web/**', allowEmptyArchive: true
                 }
             }
@@ -43,22 +64,20 @@ pipeline {
         stage('BUILD APK') {
             steps {
                 script {
-                    // Build the APK
-                    sh "${WORKSPACE}/flutter/bin/flutter build apk"
+                    sh "${FLUTTER_HOME}/bin/flutter build apk"
                 }
             }
             post {
                 success {
-                    // Archive the APK build artifacts
                     archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', allowEmptyArchive: true
                 }
             }
         }
 
+        // Uncomment the following stage if you want to distribute the APK using App Center
         // stage('DISTRIBUTE') {
         //     steps {
         //         script {
-        //             // Distribute the APK file using App Center
         //             sh '''
         //             appCenter distribute \
         //                 --app "Yosr Ayadi/Poppin Road Cinema" \
