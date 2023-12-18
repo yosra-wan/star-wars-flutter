@@ -2,7 +2,11 @@ pipeline {
     agent any
 
     stages {
-      
+        stage('GIT PULL') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: 'yosra']], userRemoteConfigs: [[url: 'https://github.com/yosra-wan/star-wars-flutter.git']]])
+            }
+        }
 
         stage('BUILD WEB') {
             steps {
@@ -19,40 +23,34 @@ pipeline {
             }
         }
 
-     stage('BUILD APK') {
-    steps {
-        script {
-           
-
-            // Unzip the Gradle wrapper (if needed)
-            powershell 'Expand-Archive -Path gradle-wrapper.zip -DestinationPath android/gradle/wrapper/ -Force'
-
-            // Build the APK
-            sh 'flutter build apk'
-        }
-    }
-    post {
-        success {
-            // Archive the APK build artifacts
-            archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', allowEmptyArchive: true
-        }
-    }
-}
-
-
-
-
-        stage('DISTRIBUTE') {
+        stage('BUILD APK') {
             steps {
                 script {
-                    // Distribute the APK file using App Center
-                    appCenter apiToken: 'e006642d7a561fc195994cfd88529b418c07a6fa',
-                              ownerName: 'Yosr Ayadi',
-                              appName: 'Poppin Road Cinema',
-                              pathToApp: 'build/app/outputs/flutter-apk/app-release.apk',
-                              distributionGroups: 'Cinema'
+                    // Build the APK
+                    sh 'flutter build apk'
+                }
+            }
+            post {
+                success {
+                    // Archive the APK build artifacts
+                    archiveArtifacts artifacts: 'build/app/outputs/flutter-apk/app-release.apk', allowEmptyArchive: true
                 }
             }
         }
+
+        // stage('DISTRIBUTE') {
+        //     steps {
+        //         script {
+        //             // Distribute the APK file using App Center
+        //             sh '''
+        //             appCenter distribute \
+        //                 --app "Yosr Ayadi/Poppin Road Cinema" \
+        //                 --file build/app/outputs/flutter-apk/app-release.apk \
+        //                 --groups "Cinema" \
+        //                 --token "e006642d7a561fc195994cfd88529b418c07a6fa"
+        //             '''
+        //         }
+        //     }
+        // }
     }
 }
