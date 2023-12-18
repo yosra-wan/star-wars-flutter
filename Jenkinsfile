@@ -4,8 +4,8 @@ pipeline {
     environment {
         PATH = "$PATH:${WORKSPACE}/flutter/bin"
         FLUTTER_PATH = "${WORKSPACE}/flutter/bin/flutter"
-        ANDROID_HOME = "/home/ubuntu/android-sdk"
-        GRADLEW_PATH = "${WORKSPACE}/flutter/android/gradlew"
+        ANDROID_HOME = "/home/ubuntu/android-sdk" // Set this to the correct path
+        GRADLEW_PATH = "${WORKSPACE}/flutter/bin/flutter"
     }    
     
     stages {
@@ -22,27 +22,6 @@ pipeline {
                 script {
                     sh "chmod +x ${FLUTTER_PATH}"
                     echo "Flutter binary path: ${FLUTTER_PATH}"
-                }
-            }
-        }
-
-               stage('FLUTTER PACKAGES') {
-            steps {
-                catchError {
-                    // Clean before fetching packages
-                    sh "${FLUTTER_HOME}/bin/flutter clean"
-                    
-                    // Get Flutter packages
-                    sh "${FLUTTER_HOME}/bin/flutter pub get"
-                }
-            }
-        }
-
-        stage('VERIFY ANDROID SDK') {
-            steps {
-                catchError {
-                    // Verify the Android SDK components
-                    sh "${ANDROID_HOME}/tools/bin/sdkmanager --list"
                 }
             }
         }
@@ -69,10 +48,10 @@ pipeline {
                     // Ensure the Flutter binary is executable
                     sh "chmod +x ${FLUTTER_PATH}"
                     
-                    // Change to the Android project directory
-                    dir("${WORKSPACE}/flutter/android") {
-                        // Run the Gradle Wrapper build
-                        sh "./gradlew build"
+                    // Change to the Flutter project directory
+                    dir("${WORKSPACE}/flutter") {
+                        // Run the Flutter Gradle Wrapper build
+                        sh "${FLUTTER_PATH} build apk"
                     }
                 }
             }
