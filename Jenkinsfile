@@ -1,17 +1,27 @@
 pipeline {
     agent any
- environment {
-      PATH = "$PATH:/tmp/workspace/flutter/bin"
+    environment {
+        PATH = "$PATH:/tmp/workspace/flutter/bin"
     }    
     stages {
-        stage('Setup') {
-            steps {
-                print "${env.PATH}"
-            }    
-        }
         stage('GIT PULL') {
             steps {
                 checkout([$class: 'GitSCM', branches: [[name: 'yosra']], userRemoteConfigs: [[url: 'https://github.com/yosra-wan/star-wars-flutter.git']]])
+            }
+        }
+
+        stage('SETUP FLUTTER') {
+            steps {
+                script {
+                    // Determine the path to the Flutter binary
+                    def flutterPath = "${WORKSPACE}/flutter/bin/flutter"
+                    
+                    // Ensure the Flutter binary is executable
+                    sh "chmod +x ${flutterPath}"
+                    
+                    // Print the path for verification
+                    echo "Flutter binary path: ${flutterPath}"
+                }
             }
         }
 
@@ -19,7 +29,7 @@ pipeline {
             steps {
                 script {
                     // Run flutter build web
-                    sh 'flutter build web'
+                    sh "${WORKSPACE}/flutter/bin/flutter build web"
                 }
             }
             post {
@@ -34,7 +44,7 @@ pipeline {
             steps {
                 script {
                     // Build the APK
-                    sh 'flutter build apk'
+                    sh "${WORKSPACE}/flutter/bin/flutter build apk"
                 }
             }
             post {
